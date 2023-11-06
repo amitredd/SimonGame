@@ -131,7 +131,7 @@ function playSound(soundName) {
 
 function showLostModal(enabler) {
 	if (enabler) {
-		playSound("lose");
+		// playSound("lose");
 		modal.classList.remove("hide");
 	} else {
 		modal.classList.add("hide");
