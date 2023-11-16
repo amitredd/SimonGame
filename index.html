@@ -1,33 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<link rel="stylesheet" href="style.css" />
-		<link rel="shortcut icon" href="simon_logo.svg" type="image/x-icon" />
-		<title>Simon</title>
-	</head>
-	<body>
-		<header>
-			<h1 id="level">Level 1</h1>
-			<h1 id="score">Highest : 0</h1>
-		</header>
-		<section class="boxes">
-			<button id="box_green" class="box"></button>
-			<button id="box_yellow" class="box"></button>
-			<button id="box_red" class="box"></button>
-			<button id="box_blue" class="box"></button>
-		</section>
-		<button id="start" class="start disable">Start</button>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="index.css">
+    <link rel="icon" href="simon_logo.svg" type="image/x-icon">
+    <title>Simon Game</title>
+</head>
+<body>
+       
+       <div class="header">
+            <h1 id="level">Level</h1>
+            <h1 id="score">Score: 0</h1>
+       </div>  
 
-		<section id="modal_overlay" class="hide">
-			<div class="modal_content">
-				<h1 id="modal_message">You Lose</h1>
-				<button id="modal_button">try again</button>
-			</div>
-		</section>
+      <div id="container">
+           
+            <button class="box" id="green"></button>
+            <button class="box" id="yellow" ></button>
+            <button class="box" id="red"></button>
+            <button class="box" id="blue"></button>
+      </div>
 
-		<script src="index.js"></script>
-	</body>
+      <button id="start">Start</button>
+
+       <div id="overlay" class="hide">
+                  <div id="content">
+                    <h1>You Loose</h1>
+                    <button id="tryagain">Try Again</button>
+                  </div>
+       </div>
+
+
+    <script src="index.js"></script>    
+</body>
 </html>
