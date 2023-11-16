@@ -1,173 +1,201 @@
+//declaring DOM
+const startButton=document.getElementById('start');
+const level=document.getElementById('level');
+const score=document.getElementById('score');
+const overlay = document.getElementById('overlay');
+const overlayButton=document.getElementById('tryagain');
 
-// dom declaration
-const startButton = document.getElementById("start");
-const levelText = document.getElementById("level");
-const modal = document.getElementById("modal_overlay");
-const modalButton = document.getElementById("modal_button");
-const scoreText = document.getElementById("score");
 
-// arrayMain for referencing the random set of color
-// arrayInGame for set of colors in every level always clear every level
-const arrayBox = ["box_green", "box_yellow", "box_red", "box_blue"];
-const arrayMain = [];
-const arrayInGame = [];
-let highestScore = 0;
-let currentScore = 0;
+const arrayColor = ["red", "blue", "green", "yellow"]
+const arrayActual = [];
+const arrayClicked = [];
+let highScore = 0;
+let currScore = 0;
+//At start of game we want start button enabled and rest all as disabled
+function newGame(){
+    arrayActual.length = arrayClicked.length =currScore =0;
+    level.innerText="Level: "+ 1;
+    startButton.innerText="Start";
 
-function resetGame() {
-	arrayMain.length = arrayInGame.length = currentScore = 0;
-	levelText.innerText = "Level " + 1;
 
-	startButton.innerText = "Start";
-	disableBoxButton(true, true);
-	disbleStartButton(false);
+    disableBoxButton(true,true);
+    disableStartButton(false);
+}
+//Function for controlling UI and functions of start button
+function disableStartButton(check){
+   startButton.disabled=check;
+   
+   if(check){
+     startButton.classList.add("disable");
+   }
+   else{
+    startButton.classList.remove("disable");
+   }
+
+}
+//Function for controlling UI and functions of box button elements
+function disableBoxButton(check,UIcheck){
+    const items = document.getElementsByClassName("box")
+    for(const item of items){
+           item.disabled=check;
+          
+        if(UIcheck){
+            item.classList.add("disable");
+        }
+        else{
+            item.classList.remove("disable");
+        }
+
+    }
 }
 
-//disble a button box logic or UI style
-function disableBoxButton(isDisable, isDisabledUI) {
-	for (const element of document.getElementsByClassName("box")) {
-		element.disabled = isDisable;
+function playsound(soundName){
+   switch(soundName){
+    case "coin":
+           const audio = new Audio("./audio/coin_sound.wav");
+           audio.play();
+           break;
+    
+    case "lose":
+           new Audio("./audio/lose.wav").play();  //shorthand
+           break;
+           
+    case "start":
+           new Audio("./audio/start.wav").play(); 
+           break;
+           
+    case "try":
+           new Audio("./audio/try.wav").play();
+           break;  
 
-		if (isDisabledUI) element.classList.add("disable");
-		else element.classList.remove("disable");
-	}
+    case "win":
+           new Audio("./audio/win.wav").play();
+           break;                
+
+    default:
+   }
 }
 
-function disbleStartButton(enabler) {
-	startButton.disabled = enabler;
+//Function for blinking each time when its called from addColor(Called for whole arrayActual)
+function activeBox(boxId){
+   const boxid = document.getElementById(boxId);
+   boxid.classList.add("boxpress");
+   playsound("coin");
 
-	if (enabler) startButton.classList.add("disable");
-	else startButton.classList.remove("disable");
+   setTimeout(()=>{
+      boxid.classList.remove("boxpress");
+   },400)
 }
 
-// add glow effect
-function activeBox(boxID) {
-	const box = document.getElementById(boxID);
-	box.classList.add("box_press");
-	playSound("coin");
+//Generating random color and pushing to arrayActual
+function addColor(){
 
-	setTimeout(() => {
-		box.classList.remove("box_press");
-	}, 400);
+   arrayActual.push(arrayColor[Math.round(Math.random()*3)])
+   console.log(arrayActual)
+   
 }
 
-function addColorRandom() {
-	arrayMain.push(arrayBox[Math.round(Math.random() * 3)]);
-	console.log(arrayMain);
+//Mainc function for the Game after clicking on Start
+function generateRandomColor(){
+   startButton.innerText="Wait";
+   addColor(); 
+   
+    
+   let index=0;
+   const glowEach = setInterval(()=>{
+       activeBox(arrayActual[index]);
+       index++;
+       
+       if(index===arrayActual.length){
+        startButton.innerText ="Guess";
+        disableBoxButton(false,false)
+        clearInterval(glowEach);
+       }
+
+   },600)
+
 }
 
-function playColorSet() {
-	startButton.innerText = "Wait";
-	addColorRandom();
+//After winning a level we need to update stuff on page
+function winLevel(){
+    arrayClicked.length = 0;
+    level.innerText = `Current:${(arrayActual.length+1).toString()}`;
+    startButton.innerText = "Start";
+    //disabling so that cant press before again cliking on Start 
+    disableBoxButton(true);
+    playsound("win");
+    
 
-	//use for playing the next color set
-	let index = 0;
-	const glowEach = setInterval(() => {
-		activeBox(arrayMain[index++]);
-
-		if (index === arrayMain.length) {
-			startButton.innerText = "Guess";
-			disableBoxButton(false, false);
-			clearInterval(glowEach);
-		}
-	}, 600);
+    setTimeout(()=>{
+         disableBoxButton(true,true);
+         disableStartButton(false);
+    },1000);
+    currScore++;
+    if(currScore>highScore || highScore===0){
+        score.innerText = `Highest: ${++highScore}`
+    }
 }
 
-function checkColorSet() {
-	//lose
-	if (!isArrayStartsWith(arrayMain, arrayInGame)) loseLevel();
-	//win
-	else if (arrayInGame.length === arrayMain.length && arrayInGame.length !== 0) winLevel();
+function loseLevel(){
+    playsound("lose");
+    //while lose sound is playing we should not access other functinality
+    disableBoxButton(true,true);
+    disableStartButton(true);
+    startButton.innerText = "Start"
+    //setting the timeout length accoding to above sound length
+    setTimeout(()=>{
+        overlayControl(true);
+        newGame(); 
+    },3000)
+    
 }
 
-function loseLevel() {
-	playSound("lose");
-	showLostModal(true);
-	resetGame();
-}
-
-//reset ingame array and add one color randomly
-function winLevel() {
-	arrayInGame.length = 0;
-	levelText.innerText = `Current: ${(arrayMain.length + 1).toString()}`;
-	startButton.innerText = "Start";
-
-	disableBoxButton(true);
-	playSound("win");
-
-	setTimeout(() => {
-		disableBoxButton(true, true);
-		disbleStartButton(false);
-	}, 1000);
-
-	currentScore++;
-
-	if (currentScore > highestScore || highestScore === 0) {
-		scoreText.innerText = `highest : ${++highestScore}`;
-	}
-}
-
-//utils
-function playSound(soundName) {
-	switch (soundName) {
-		case "coin":
-			new Audio("./audio/coin_sound.wav").play();
-			break;
-		case "win":
-			new Audio("./audio/win.wav").play();
-			break;
-		case "lose":
-			new Audio("./audio/lose.wav").play();
-			break;
-		case "try":
-			new Audio("./audio/try.wav").play();
-			break;
-		case "start":
-			new Audio("./audio/start.wav").play();
-			break;
-		default:
-	}
-}
-
-function showLostModal(enabler) {
-	if (enabler) {
-		// playSound("lose");
-		modal.classList.remove("hide");
+function overlayControl(check) {
+	if (check) {
+		overlay.classList.remove("hide");
 	} else {
-		modal.classList.add("hide");
+		overlay.classList.add("hide");
 	}
 }
+//checking if both array are same
+function check(first,second){
+    const firstArray = [...first];
+    const secondArray = [...second];
 
-function isArrayStartsWith(first, second) {
-	const firstArray = [...first];
-	const secondArray = [...second];
-
-	for (let index = 0; index < secondArray.length; index++)
-		if (firstArray[index] !== secondArray[index]) return false;
-
-	return true;
+    for(let index =0;index < secondArray.length; index++){
+        if(firstArray[index]!==secondArray[index]) return false;
+    }
+    return true;
 }
 
-//function clicking all box
-for (const item of document.getElementsByClassName("box"))
-	item.addEventListener("click", () => {
-		const id = item.getAttribute("id");
-		arrayInGame.push(id);
-		checkColorSet();
-		playSound("coin");
-	});
+function checkColorSet(){
+    //lose
+    if(!check(arrayActual,arrayClicked)) loseLevel();
+    else if(arrayActual.length===arrayClicked.length && arrayClicked.length!==0) winLevel();//win 
+}
 
-modalButton.addEventListener("click", () => {
-	playSound("try");
-	showLostModal(false);
-});
+startButton.addEventListener("click",()=>{
+    disableStartButton(true);
+    disableBoxButton(true,false);
+    generateRandomColor();
+    playsound("start");
+})
+//controlling overlay 
+overlayButton.addEventListener("click",()=>{
+    playsound("try");
+    overlayControl(false);
+})
+newGame();
 
-startButton.addEventListener("click", () => {
-	disbleStartButton(true);
-	disableBoxButton(true, false);
-	playColorSet();
-	playSound("start");
-});
+for(const item of document.getElementsByClassName("box")){
+    item.addEventListener("click",()=>{
+        
+        playsound("coin");
+        const id = item.getAttribute("id");
+        arrayClicked.push(id);
+        checkColorSet();
+        
+    })
 
-// starting point
-resetGame();
+}
+
